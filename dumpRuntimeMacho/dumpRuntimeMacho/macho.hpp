@@ -44,6 +44,7 @@ namespace macho {
         ~MachOFile();
         
         vm_address_t m_load_address;
+        vm_address_t m_dyld_load_address;
         bool m_is64bit;
         bool m_isDyldLinker;
         struct mach_header*       m_header;
@@ -54,9 +55,11 @@ namespace macho {
         bool parse_header();
         bool parse_LC_SEGMENT_64(load_command_info_t* load_cmd_info);
         bool parse_load_commands();
+        bool getLoadAddress();
         void setPid(int pid);
         bool checkInit();
         vm_address_t searchDyldImageLoadAddress();
+        vm_address_t memorySearchDyld();
         bool check_dyld(vm_address_t addr);
     private:
         int m_pid;

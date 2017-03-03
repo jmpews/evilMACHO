@@ -34,12 +34,39 @@ namespace macho {
         return false;
     }
     
+    bool MachOFile::getLoadAddress() {
+        unsigned long search_block_size = 0x1000;
+        //search align by memory page
+        vm_address_t addr  = MACHO_LOAD_ADDRESS;
+        
+        unsigned long aslr_top_limit = ((1 << 16) << 12) + 0x100000000;
+        vm_address_t end = aslr_top_limit;
+        
+        unsigned long size = 1;
+        char ch;
+        
+        while(end > addr) {
+            if(readTaskMemory(m_task, addr, &ch, &size)) {
+                m_load_address = addr;
+                std::cout << "[+] found load address: 0x" << std::hex << addr << std::endl;
+                return true;
+            }
+            
+            size = 1;
+            addr += search_block_size;
+        }
+        return false;
+    }
+    
+    
     void MachOFile::setPid(int pid) {
         this->m_pid = pid;
         this->m_task = pid2task(pid);
     }
     
     bool MachOFile::parse_macho() {
+        if(!getLoadAddress())
+            return false;
         if(!parse_header())
             return false;
         parse_load_commands();
@@ -139,14 +166,14 @@ namespace macho {
         load_cmd_info->cmd_info = seg_cmd;
         
         // set vm map end
-        if(seg_cmd->vmaddr + seg_cmd->vmsize > m_map_end) {
-            m_map_end = seg_cmd->vmaddr + seg_cmd->vmsize;
+        if(seg_cmd->vmaddr - MACHO_LOAD_ADDRESS + m_load_address + seg_cmd->vmsize > m_map_end) {
+            m_map_end = seg_cmd->vmaddr - MACHO_LOAD_ADDRESS + m_load_address + seg_cmd->vmsize;
         }
         
         std::cout
         << "SEGMENT: " << (seg_cmd->segname)
         << ", cmdsize: " << (seg_cmd->cmdsize)
-        << ", vmaddr: 0x" << std::hex << (seg_cmd->vmaddr)
+        << ", vmaddr: 0x" << std::hex << (seg_cmd->vmaddr - MACHO_LOAD_ADDRESS + m_load_address)
         << ", vmsize: " << (seg_cmd->vmsize)
         << std::endl;
         
@@ -162,7 +189,7 @@ namespace macho {
             //TODO: use?
             std::cout
             << "\tsection: " << (tmp_section->sectname)
-            << ", address: 0x" << std::hex << (tmp_section->addr)
+            << ", address: 0x" << std::hex << (tmp_section->addr - MACHO_LOAD_ADDRESS + m_load_address)
             << ", size: " << (tmp_section->size)
             << std::endl;
             
@@ -173,25 +200,58 @@ namespace macho {
         return true;
     }
     
+    /* brute force search dyld*/
     vm_address_t MachOFile::searchDyldImageLoadAddress() {
-        vm_address_t start_addr = 0;
-        vm_address_t result;
+        vm_address_t start_addr, addr;
         if(m_map_end == 0)
             start_addr = MACHO_LOAD_ADDRESS;
         else
             start_addr = m_map_end;
         
-        uint32_t magic_64 = MH_MAGIC_64;
-        do {
-            result = memorySearchDyld(m_task, start_addr, (char *)&magic_64, 4);
-            start_addr = result + sizeof(uint32_t);
-            
-            // vm page align
-            if(result & (0x1000-1))
-                continue;
-        } while(result && !check_dyld(result));
+        unsigned long search_block_size = 0x1000;
         
-        return result;
+        uint32_t magic_64 = MH_MAGIC_64;
+        
+        //search align by memory page
+        start_addr  = start_addr & ~(search_block_size - 1);
+        
+        // LINE: xnu-3789.41.3:mach_loader.c:383 dyld_aslr_offset
+        // LINE: xnu-3789.41.3:mach_loader.c:649
+        // slide = vm_map_round_page(slide + binresult->max_vm_addr, effective_page_mask);
+        
+        unsigned long aslr_top_limit = ((1 << 16) << 12);
+        vm_address_t end = aslr_top_limit + start_addr;
+        
+        unsigned long size = sizeof(uint32_t);
+        char *buf = (char *)malloc(sizeof(uint32_t));
+        unsigned long tmp_size;
+        tmp_size = size;
+        
+        addr = start_addr;
+        
+        std::cout << "[*] start dyld search at 0x" << std::hex << addr << std::endl;
+        
+        while(end > addr) {
+            if(readTaskMemory(m_task, addr, buf, &tmp_size)) {
+                if(tmp_size != size) {
+                    std::cout << "readTaskMemory size not match." << std::endl;
+                    return 0;
+                }
+                if((!memcmp(buf, &magic_64, size)) && check_dyld(addr))
+                    break;
+            }
+            
+            tmp_size = size;
+            addr += search_block_size;
+        }
+
+        if(addr < end) {
+            m_dyld_load_address = addr;
+            return true;
+        } else {
+            m_dyld_load_address = 0;
+            return false;
+        }
     }
     
     bool MachOFile::check_dyld(vm_address_t addr) {
@@ -199,6 +259,7 @@ namespace macho {
         dyld.m_load_address = addr;
         dyld.m_task = m_task;
         
+        std::cout << "[*] dyld load address check 0x" << std::hex << addr << std::endl;
         if(!dyld.parse_header())
             return false;
         if(dyld.m_is64bit) {

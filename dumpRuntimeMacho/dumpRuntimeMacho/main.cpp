@@ -20,12 +20,13 @@ int main(int argc, const char * argv[]) {
     pid_t  remotePid;
     remotePid = getpid();
     MachOFile machoFile;
-    machoFile.setPid(remotePid);
+    machoFile.setPid(28307);
+//    machoFile.setPid(remotePid);
     machoFile.parse_macho();
     
-    vm_address_t dyld_load_address = machoFile.searchDyldImageLoadAddress();
-    if(dyld_load_address)
-        std::cout << "[+] DyldImageLoadAddress: 0x" << std::hex << dyld_load_address << std::endl;
+    if(machoFile.searchDyldImageLoadAddress()) {
+        std::cout << "[+] DyldImageLoadAddress: 0x" << std::hex << machoFile.m_dyld_load_address << std::endl;
+    }
     return 0;
 }
 
