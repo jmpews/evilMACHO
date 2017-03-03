@@ -25,7 +25,7 @@ int main(int argc, const char * argv[]) {
     
     vm_address_t dyld_load_address = machoFile.searchDyldImageLoadAddress();
     if(dyld_load_address)
-        std::cout << "[+] DyldImageLoadAddress: " << std::hex << dyld_load_address;
+        std::cout << "[+] DyldImageLoadAddress: 0x" << std::hex << dyld_load_address << std::endl;
     return 0;
 }
 

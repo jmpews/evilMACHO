@@ -25,4 +25,6 @@ readTaskMemory (task_t t,
                    unsigned long* size);
 
 vm_address_t memorySearch(task_t task, vm_address_t start, vm_address_t end, char *data, unsigned long size);
+vm_address_t memorySearchDyld(task_t task, vm_address_t start,char *data, unsigned long size);
+
 #endif /* common_hpp */

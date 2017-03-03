@@ -15,6 +15,7 @@ namespace macho {
     , m_pid(-1)
     , m_task(-1)
     , m_isDyldLinker(false)
+    , m_map_end(MACHO_LOAD_ADDRESS)
     , m_load_address(MACHO_LOAD_ADDRESS)
     , m_header(NULL)
     , m_header64(NULL)
@@ -145,7 +146,7 @@ namespace macho {
         std::cout
         << "SEGMENT: " << (seg_cmd->segname)
         << ", cmdsize: " << (seg_cmd->cmdsize)
-        << ", vmaddr: " << std::hex << (seg_cmd->vmaddr)
+        << ", vmaddr: 0x" << std::hex << (seg_cmd->vmaddr)
         << ", vmsize: " << (seg_cmd->vmsize)
         << std::endl;
         
@@ -161,7 +162,7 @@ namespace macho {
             //TODO: use?
             std::cout
             << "\tsection: " << (tmp_section->sectname)
-            << ", address: " << std::hex << (tmp_section->addr)
+            << ", address: 0x" << std::hex << (tmp_section->addr)
             << ", size: " << (tmp_section->size)
             << std::endl;
             
@@ -180,11 +181,9 @@ namespace macho {
         else
             start_addr = m_map_end;
         
-        start_addr = MACHO_LOAD_ADDRESS + 0x2000;
-        
         uint32_t magic_64 = MH_MAGIC_64;
         do {
-            result = memorySearch(m_task, start_addr, 0, (char *)&magic_64, 4);
+            result = memorySearchDyld(m_task, start_addr, (char *)&magic_64, 4);
             start_addr = result + sizeof(uint32_t);
             
             // vm page align
