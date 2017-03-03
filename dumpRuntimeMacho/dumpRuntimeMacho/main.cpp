@@ -20,8 +20,8 @@ int main(int argc, const char * argv[]) {
     pid_t  remotePid;
     remotePid = getpid();
     MachOFile machoFile;
-    machoFile.setPid(28307);
-//    machoFile.setPid(remotePid);
+//    machoFile.setPid(28307);
+    machoFile.setPid(remotePid);
     machoFile.parse_macho();
     
     if(machoFile.searchDyldImageLoadAddress()) {
