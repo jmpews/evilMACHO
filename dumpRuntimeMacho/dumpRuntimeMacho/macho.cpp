@@ -137,21 +137,40 @@ namespace macho {
         
         /* iterate the load commands */
         std::vector<load_command_info_t>::iterator iter;
-        load_command_info_t *tmp_load_cmd_info;
+        load_command_info_t *load_cmd_info;
         for(iter = m_load_command_infos.begin(); iter != m_load_command_infos.end(); iter++) {
-            tmp_load_cmd_info = &(*iter);
-            switch (tmp_load_cmd_info->cmd_type) {
+            load_cmd_info = &(*iter);
+            switch (load_cmd_info->cmd_type) {
                 case LC_SEGMENT_64:
-                    if(!parse_LC_SEGMENT_64(tmp_load_cmd_info))
+                    if(!parse_LC_SEGMENT_64(load_cmd_info))
                         return false;
                     break;
                 case LC_ID_DYLINKER:
                     m_isDyldLinker = true;
+                    break;
+                case LC_SYMTAB:
+                    if(!parse_LC_SYMTAB(load_cmd_info))
+                        return false;
+                    break;
                 default:
                     break;
             }
             
         }
+        return true;
+    }
+    
+    bool MachOFile::parse_LC_SYMTAB(load_command_info_t* load_cmd_info) {
+        struct symtab_command* sym_cmd;
+        unsigned long len;
+        
+        len = sizeof(struct symtab_command);
+        sym_cmd = (struct symtab_command*)malloc(len);
+        readTaskMemory(m_task, load_cmd_info->vm_addr, sym_cmd, &len);
+        load_cmd_info->cmd_info = sym_cmd;
+        
+        std::cout << "[+] string table: 0x" << std::hex << (m_link_edit_bias + sym_cmd->stroff) << std::endl;
+        
         return true;
     }
     
@@ -164,6 +183,10 @@ namespace macho {
         seg_cmd = (struct segment_command_64*)malloc(len);
         readTaskMemory(m_task, load_cmd_info->vm_addr, seg_cmd, &len);
         load_cmd_info->cmd_info = seg_cmd;
+        
+        // set link edit bias
+        if(strcmp(seg_cmd->segname, "__TEXT") == 0)
+            m_link_edit_bias = m_load_address - seg_cmd->fileoff;
         
         // set vm map end
         if(seg_cmd->vmaddr - MACHO_LOAD_ADDRESS + m_load_address + seg_cmd->vmsize > m_map_end) {
