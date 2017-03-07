@@ -8,6 +8,7 @@
 
 #include "macho.hpp"
 #include "common.hpp"
+#include <mach-o/stab.h>
 
 namespace macho {
     MachOFile::MachOFile()
@@ -184,8 +185,18 @@ namespace macho {
             readTaskMemory(m_task, addr, nl, &len);
             if(nl->n_un.n_strx > 1) {
                 char *sym_name = readTaskString(m_task, m_strtab_address+nl->n_un.n_strx);
-                if(sym_name)
-                    std::cout << "[+] symbol: " << sym_name << std::endl;
+                if(!sym_name)
+                    std::cout << "[*] symbol read error" << std::endl;
+                
+                if(!strcmp(sym_name, "_dlopen")) {
+                    std::cout << "[+] _dlopen: 0x" << std::hex << (m_load_address+nl->n_value) << std::endl;
+                }
+//                if(nl->n_type == N_FUN) {
+//                    std::cout << "[+] function: " << sym_name << ", address: 0x" << std::hex << nl->n_value << std::endl;
+//                }
+//                if(nl->n_type & 0x1e) {
+//                    std::cout << "[+] extern function: " << sym_name << ", address: 0x" << std::hex << nl->n_value << std::endl;
+//                }
                 free(sym_name);
             }
             addr += sizeof(struct nlist_64);
