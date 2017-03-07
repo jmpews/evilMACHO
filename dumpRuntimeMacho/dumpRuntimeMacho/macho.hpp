@@ -46,8 +46,12 @@ namespace macho {
         ~MachOFile();
         
         vm_address_t m_load_address;
+        vm_address_t m_slide;
         vm_address_t m_dyld_load_address;
         vm_address_t m_link_edit_bias;
+        vm_address_t m_symtab_address;
+        vm_address_t m_strtab_address;
+        
         bool m_is64bit;
         bool m_isDyldLinker;
         struct mach_header*       m_header;
@@ -56,11 +60,13 @@ namespace macho {
         
         bool parse_macho();
         bool parse_header();
-        bool parse_LC_SEGMENT_64(load_command_info_t* load_cmd_info);
         bool parse_load_commands();
         bool parse_LC_SYMTAB(load_command_info_t* load_cmd_info);
+        bool parse_LC_SEGMENT_64(load_command_info_t* load_cmd_info);
         
+        load_command_info_t* getLoadCommand(uint32_t cmd_type, char *cmd_name);
         bool getLoadAddress();
+        
         void setPid(int pid);
         bool checkInit();
         vm_address_t searchDyldImageLoadAddress();

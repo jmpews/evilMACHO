@@ -169,7 +169,27 @@ namespace macho {
         readTaskMemory(m_task, load_cmd_info->vm_addr, sym_cmd, &len);
         load_cmd_info->cmd_info = sym_cmd;
         
-        std::cout << "[+] string table: 0x" << std::hex << (m_link_edit_bias + sym_cmd->stroff) << std::endl;
+        m_symtab_address = m_link_edit_bias + sym_cmd->symoff;
+        m_strtab_address = m_link_edit_bias + sym_cmd->stroff;
+        
+        std::cout << "[+] string table: 0x" << std::hex << m_strtab_address << std::endl;
+        
+        std::cout << "[+] symbol table: 0x" << std::hex << m_symtab_address << std::endl;
+        
+        struct nlist_64* nl;
+        len = sizeof(struct nlist_64);
+        nl = (struct nlist_64*)malloc(len);
+        vm_address_t addr = m_symtab_address;
+        for(int i = 0; i < sym_cmd->nsyms; i++) {
+            readTaskMemory(m_task, addr, nl, &len);
+            if(nl->n_un.n_strx > 1) {
+                char *sym_name = readTaskString(m_task, m_strtab_address+nl->n_un.n_strx);
+                if(sym_name)
+                    std::cout << "[+] symbol: " << sym_name << std::endl;
+                free(sym_name);
+            }
+            addr += sizeof(struct nlist_64);
+        }
         
         return true;
     }
@@ -184,9 +204,22 @@ namespace macho {
         readTaskMemory(m_task, load_cmd_info->vm_addr, seg_cmd, &len);
         load_cmd_info->cmd_info = seg_cmd;
         
-        // set link edit bias
-        if(strcmp(seg_cmd->segname, "__TEXT") == 0)
-            m_link_edit_bias = m_load_address - seg_cmd->fileoff;
+        if (strcmp(seg_cmd->segname, "__TEXT") == 0) {
+            m_slide = m_load_address - seg_cmd->vmaddr;
+        }
+        /*
+            set link edit bias
+            how to calculate it?
+            ref: dyld-421.2/src/ImageLoaderMachO.cpp
+            ImageLoaderMachO::parseLoadCmds
+            fLinkEditBase = (uint8_t*)(segActualLoadAddress(i) - segFileOffset(i));
+         */
+        if(strcmp(seg_cmd->segname, "__LINKEDIT") == 0) {
+//            load_command_info_t* tmp;
+//            tmp = getLoadCommand(LC_SEGMENT_64, "__TEXT");
+//            vm_address_t text_vm_addr = ((struct segment_command_64*)tmp)->vmaddr;
+            m_link_edit_bias = seg_cmd->vmaddr + m_slide - seg_cmd->fileoff;
+        }
         
         // set vm map end
         if(seg_cmd->vmaddr - MACHO_LOAD_ADDRESS + m_load_address + seg_cmd->vmsize > m_map_end) {
@@ -221,6 +254,27 @@ namespace macho {
         }
         std::cout << std::endl;
         return true;
+    }
+    
+    
+    load_command_info_t* MachOFile::getLoadCommand(uint32_t cmd_type, char *cmd_name) {
+        /* iterate the load commands */
+        std::vector<load_command_info_t>::iterator iter;
+        load_command_info_t *load_cmd_info;
+        for(iter = m_load_command_infos.begin(); iter != m_load_command_infos.end();
+            iter++) {
+            load_cmd_info = &(*iter);
+            if((cmd_type != 0) && (cmd_type != load_cmd_info->cmd_type))
+                continue;
+            
+            if((load_cmd_info->cmd_type == LC_SEGMENT_64)
+               && (cmd_name != NULL)
+               && load_cmd_info->cmd_info
+               && (!strcmp(((struct segment_command_64*)(load_cmd_info->cmd_info))->segname, cmd_name)))
+                return load_cmd_info;
+            
+        }
+        return NULL;
     }
     
     /* brute force search dyld*/

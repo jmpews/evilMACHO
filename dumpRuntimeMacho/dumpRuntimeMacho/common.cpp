@@ -28,13 +28,28 @@ readTaskMemory (task_t t,
     return true;
 }
 
+char* readTaskString (task_t t,
+                vm_address_t addr) {
+    char x = '\0';
+    unsigned long len = 1;
+    vm_address_t end;
+    char *str = NULL;
+    
+    end = memorySearch(t, addr, addr+0x1000, &x, len);
+    if(!end) {
+        return NULL;
+    }
+    len = end - addr;
+    str = (char *)malloc(len);
+    readTaskMemory(t, addr, str, &len);
+    return str;
+}
+
 task_t pid2task(unsigned int pid) {
     task_t t;
     task_for_pid(mach_task_self(), pid, &t);
     return t;
 }
-
-
 
 vm_address_t memorySearch(task_t task, vm_address_t start, vm_address_t end, char *data, unsigned long size) {
     
