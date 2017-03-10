@@ -54,7 +54,7 @@ namespace machort {
         while(end > addr) {
             if(rt_read(addr, &ch, 1)) {
                 m_load_addr = addr;
-                std::cout << "[+] found load address: 0x" << std::hex << addr << std::endl;
+                std::cout << "[+] BinLoadAddress: 0x" << std::hex << addr << std::endl;
                 return true;
             }
             
@@ -72,6 +72,7 @@ namespace machort {
     bool MachOFile::parse_macho() {
         if(!searchBinLoadAddress())
             return false;
+        std::cout << "[*] start dump macho:" << std::endl;
         if(!parse_header())
             return false;
         parse_load_commands();
@@ -92,8 +93,6 @@ namespace machort {
                 if(!rt_read(m_load_addr, m_header64, sizeof(struct mach_header_64)))
                     return false;
                 
-                std::cout << "--------------------------------------------------" << std::endl;
-                std::cout << "[*] dump macho:" << std::endl;
                 std::cout << "[+] macho: Arch-" << "64" << std::endl;
                 break;
             default:
@@ -191,7 +190,7 @@ namespace machort {
                 char *sym_name = rt_readString(m_strtab_addr+nl->n_un.n_strx);
                 if(sym_name) {
                     if(!strcmp(sym_name, "_dlopen")) {
-                        std::cout << "[+] _dlopen: 0x" << std::hex << (m_load_addr+nl->n_value) << std::endl;
+                        std::cout << "[+] found function _dlopen: 0x" << std::hex << (m_load_addr+nl->n_value) << std::endl;
                     }
                     //                if(nl->n_type == N_FUN) {
                     //                    std::cout << "[+] function: " << sym_name << ", address: 0x" << std::hex << nl->n_value << std::endl;
@@ -254,7 +253,7 @@ namespace machort {
         }
         
         std::cout
-        << "SEGMENT: " << (seg_cmd_64->segname)
+        << "    +segment: " << (seg_cmd_64->segname)
         << ", cmdsize: " << (seg_cmd_64->cmdsize)
         << ", vmaddr: 0x" << std::hex << (seg_cmd_64->vmaddr - MACHO_LOAD_ADDRESS + m_load_addr)
         << ", vmsize: " << (seg_cmd_64->vmsize)
@@ -271,7 +270,7 @@ namespace machort {
             
             //TODO: use?
             std::cout
-            << "\tsection: " << (section->sectname)
+            << "      -section: " << (section->sectname)
             << ", address: 0x" << std::hex << (section->addr - MACHO_LOAD_ADDRESS + m_load_addr)
             << ", size: " << (section->size)
             << std::endl;
@@ -282,7 +281,6 @@ namespace machort {
         }
         
         load_cmd_info->ptr = info;
-        std::cout << std::endl;
         return true;
     }
     
