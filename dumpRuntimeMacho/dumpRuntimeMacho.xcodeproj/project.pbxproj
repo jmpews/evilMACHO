@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		F352A01C1E68824F0038A3F5 /* common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F352A0181E68824F0038A3F5 /* common.cpp */; };
-		F352A01D1E68824F0038A3F5 /* macho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F352A01A1E68824F0038A3F5 /* macho.cpp */; };
 		F352A01F1E6882770038A3F5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F352A01E1E6882770038A3F5 /* main.cpp */; };
+		F3AB7A9C1E6FCE100047073A /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = F3AB7A9B1E6FCE100047073A /* Makefile */; };
+		F3AB7A9F1E711D6F0047073A /* macho_rt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3AB7A9D1E711D6F0047073A /* macho_rt.cpp */; };
+		F3AB7AA21E715B1B0047073A /* macho_fd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3AB7AA01E715B1B0047073A /* macho_fd.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,9 +30,13 @@
 		F352A00E1E6882200038A3F5 /* dumpRuntimeMacho */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dumpRuntimeMacho; sourceTree = BUILT_PRODUCTS_DIR; };
 		F352A0181E68824F0038A3F5 /* common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = common.cpp; sourceTree = "<group>"; };
 		F352A0191E68824F0038A3F5 /* common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = common.hpp; sourceTree = "<group>"; };
-		F352A01A1E68824F0038A3F5 /* macho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = macho.cpp; sourceTree = "<group>"; };
-		F352A01B1E68824F0038A3F5 /* macho.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = macho.hpp; sourceTree = "<group>"; };
 		F352A01E1E6882770038A3F5 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		F3AB7A9B1E6FCE100047073A /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		F3AB7A9D1E711D6F0047073A /* macho_rt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = macho_rt.cpp; sourceTree = "<group>"; };
+		F3AB7A9E1E711D6F0047073A /* macho_rt.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = macho_rt.hpp; sourceTree = "<group>"; };
+		F3AB7AA01E715B1B0047073A /* macho_fd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = macho_fd.cpp; sourceTree = "<group>"; };
+		F3AB7AA11E715B1B0047073A /* macho_fd.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = macho_fd.hpp; sourceTree = "<group>"; };
+		F3AB7AA31E715B960047073A /* machotypes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = machotypes.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,10 +70,14 @@
 			isa = PBXGroup;
 			children = (
 				F352A0181E68824F0038A3F5 /* common.cpp */,
+				F3AB7AA31E715B960047073A /* machotypes.hpp */,
+				F3AB7A9B1E6FCE100047073A /* Makefile */,
 				F352A0191E68824F0038A3F5 /* common.hpp */,
 				F352A01E1E6882770038A3F5 /* main.cpp */,
-				F352A01A1E68824F0038A3F5 /* macho.cpp */,
-				F352A01B1E68824F0038A3F5 /* macho.hpp */,
+				F3AB7A9D1E711D6F0047073A /* macho_rt.cpp */,
+				F3AB7A9E1E711D6F0047073A /* macho_rt.hpp */,
+				F3AB7AA01E715B1B0047073A /* macho_fd.cpp */,
+				F3AB7AA11E715B1B0047073A /* macho_fd.hpp */,
 			);
 			path = dumpRuntimeMacho;
 			sourceTree = "<group>";
@@ -129,8 +139,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F352A01D1E68824F0038A3F5 /* macho.cpp in Sources */,
+				F3AB7AA21E715B1B0047073A /* macho_fd.cpp in Sources */,
 				F352A01C1E68824F0038A3F5 /* common.cpp in Sources */,
+				F3AB7A9C1E6FCE100047073A /* Makefile in Sources */,
+				F3AB7A9F1E711D6F0047073A /* macho_rt.cpp in Sources */,
 				F352A01F1E6882770038A3F5 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -181,7 +193,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = macosx10.12;
 			};
 			name = Debug;
 		};
@@ -221,7 +233,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				SDKROOT = macosx;
+				SDKROOT = macosx10.12;
 			};
 			name = Release;
 		};
@@ -258,6 +270,7 @@
 				F352A0171E6882200038A3F5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

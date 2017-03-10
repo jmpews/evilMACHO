@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "memorySearch(unsigned int, unsigned long, unsigned long, char*, unsigned long):common.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "memcmp(buf, data, len)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "machofd::MachoFD::parse_LC_SEGMENT_64(load_command_info*):macho_fd.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "machort::MachOFile::searchDyldImageLoadAddress(unsigned long):macho_rt.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

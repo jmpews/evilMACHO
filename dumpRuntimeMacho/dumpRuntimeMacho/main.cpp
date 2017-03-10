@@ -10,13 +10,14 @@
 #include <unistd.h>
 
 #include "common.hpp"
-#include "macho.hpp"
+#include "macho_rt.hpp"
+#include "macho_fd.hpp"
 
-using namespace macho;
+using namespace machort;
 
 int main(int argc, const char * argv[]) {
-    task_t targetTask = mach_task_self();
-    task_t remoteTask;
+//    task_t targetTask = mach_task_self();
+//    task_t remoteTask;
     pid_t  remotePid;
     remotePid = getpid();
     MachOFile machoFile;
@@ -24,9 +25,15 @@ int main(int argc, const char * argv[]) {
     machoFile.setPid(remotePid);
     machoFile.parse_macho();
     
-    if(machoFile.searchDyldImageLoadAddress()) {
-        std::cout << "[+] DyldImageLoadAddress: 0x" << std::hex << machoFile.m_dyld_load_address << std::endl;
+
+    machofd::MachoFD dyld;
+    dyld.setPath(machoFile.m_dyld_path);
+    dyld.parse_file();
+//    machoFile.m_dyld_vm_addr = dyld.m_vm_addr;
+    if(machoFile.searchDyldImageLoadAddress(dyld.m_vm_addr)) {
+        std::cout << "[+] DyldImageLoadAddress: 0x" << std::hex << machoFile.m_dyld_load_addr << std::endl;
     }
+    
     return 0;
 }
 

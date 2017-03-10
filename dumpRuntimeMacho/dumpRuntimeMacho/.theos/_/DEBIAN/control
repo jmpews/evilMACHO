@@ -1,0 +1,11 @@
+Package: com.yourcompany.dumpruntimemacho
+Name: dumpRuntimeMacho
+Depends: 
+Architecture: iphoneos-arm
+Description: An awesome tool of some sort!!
+Maintainer: jmpews
+Author: jmpews
+Section: System
+Tag: role::hacker
+Version: 0.0.1
+Installed-Size: 72
