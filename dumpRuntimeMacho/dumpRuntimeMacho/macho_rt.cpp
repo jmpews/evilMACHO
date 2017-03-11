@@ -75,7 +75,9 @@ namespace machort {
         std::cout << "[*] start dump macho:" << std::endl;
         if(!parse_header())
             return false;
-        parse_load_commands();
+        if(!parse_load_commands())
+            return false;
+        iter_load_commands();
         return true;
     }
     
@@ -124,8 +126,10 @@ namespace machort {
             
             /* move to next load_command */
             addr += lci.cmd.cmdsize;
-            
         }
+        return true;
+    }
+    bool MachOFile::iter_load_commands() {
         
         /* iterate the load commands */
         std::vector<load_command_info_t>::iterator iter;
@@ -373,6 +377,17 @@ namespace machort {
                 return false;
             if(!dyld.parse_load_commands())
                 return false;
+            
+            /* iterate the load commands */
+            std::vector<load_command_info_t>::iterator iter;
+            load_command_info_t *load_cmd_info;
+            for(iter = dyld.m_load_command_infos.begin(); iter != dyld.m_load_command_infos.end(); iter++) {
+                load_cmd_info = &(*iter);
+                switch (load_cmd_info->cmd.cmd) {
+                    case LC_ID_DYLINKER:
+                        dyld.m_isDyldLinker = true;
+                }
+            }
             if(!dyld.m_isDyldLinker)
                 return false;
         } else {

@@ -78,6 +78,7 @@ namespace machort {
         bool parse_macho();
         bool parse_header();
         bool parse_load_commands();
+        bool iter_load_commands();
         bool parse_LC_SYMTAB(load_command_info_t* load_cmd_info);
         bool parse_LC_LOAD_DYLINKER(load_command_info_t* load_cmd_info);
         bool parse_LC_SEGMENT_64(load_command_info_t* load_cmd_info);
