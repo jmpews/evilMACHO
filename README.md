@@ -2,7 +2,7 @@
 
 Malicious use of macho, such as dump-runtime-macho, function-hook.
 
-#### 1. [dumpRuntimeMacho](https://github.com/jmpews/evilMACHO/tree/master/dumpRuntimeMacho)
+#### 1. [evilMACHO/dumpRuntimeMacho](https://github.com/jmpews/evilMACHO/tree/master/dumpRuntimeMacho)
 
 dump runtime macho file and dyld load address.
 
